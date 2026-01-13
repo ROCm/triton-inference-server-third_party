@@ -26,6 +26,32 @@
 cmake_minimum_required(VERSION 3.31.8)
 project(tritonthirdparty LANGUAGES C CXX)
 #
+# Modifications Copyright (c) 2024 Advanced Micro Devices, Inc.
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+
+option(TRITON_ENABLE_ROCM "Enable AMD GPU support" ON)
+
+# Set default ROCm home path
+if(TRITON_ENABLE_ROCM AND NOT TRITON_BUILD_ROCM_HOME)
+  set(TRITON_BUILD_ROCM_HOME "/opt/rocm" CACHE PATH "ROCm installation directory")
+endif()
+
+#
 # ExternalProject Dependencies
 #
 # For each ExternalProject dependency we use PATCH_COMMAND to copy the
@@ -502,6 +528,9 @@ ExternalProject_Add(cnmem
   CMAKE_CACHE_ARGS
     ${_CMAKE_ARGS_CMAKE_TOOLCHAIN_FILE}
     ${_CMAKE_ARGS_VCPKG_TARGET_TRIPLET}
+    -DTRITON_ENABLE_ROCM:BOOL=${TRITON_ENABLE_ROCM}
+    -DTRITON_BUILD_ROCM_HOME:PATH=${TRITON_BUILD_ROCM_HOME}
+    -DAMDGPU_BUILD_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/cnmem/amdgpu # so far only cnmem from third party library list needs to be hipified
     -DCMAKE_CXX_STANDARD:STRING=${TRITON_MIN_CXX_STANDARD}
     -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON
     -DCMAKE_INSTALL_PREFIX:PATH=${TRITON_THIRD_PARTY_INSTALL_PREFIX}/cnmem
